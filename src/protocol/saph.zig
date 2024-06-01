@@ -18,6 +18,14 @@ pub const saph_request_type = enum {
             else => .none,
         };
     }
+
+    fn toa(self: *const saph_request_type) ?[]const u8 {
+        return switch (self.*) {
+            .get => "GET",
+            .post => "POST",
+            .none => "NONE",
+        };
+    }
 };
 
 pub const saph_content_type = enum {
@@ -38,32 +46,41 @@ pub const saph_content_type = enum {
             else => .none,
         };
     }
+
+    fn toa(self: *const saph_content_type) ?[]const u8 {
+        return switch (self.*) {
+            .plaintext => "Plaintext",
+            .code_ => "Code/None",
+            .code_html => "Code/HTML",
+            .code_css => "Code/CSS",
+            .code_lua => "Code/Lua",
+            .none => "None",
+        };
+    }
 };
 
 pub const saph_msg = struct {
     version: u8,
     req_type: saph_request_type,
 
-    // addy_len: u16,
-    // addy: []const u8,
+    client_addy: u32,
+    incr: bool,
+
+    path_len: u16,
+    path: []const u8,
 
     content_len: u32,
     content_type: saph_content_type,
     content: []const u8,
 
-    client_addy: u32,
-    incr: bool,
-
     pub fn from_bytes(bytes: *const []const u8) ?saph_msg {
         // Refactor to use some sort of idx var
         var msg: saph_msg = undefined;
 
-        if (bytes.*.len < 12) {
+        if (bytes.*.len < 16) {
             return null;
         }
 
-        std.debug.print("Version number recieved: {}\n", .{bytes.*[0]});
-        std.debug.print("Recieved bytes: {}\n", .{bytes.*.len});
         if (bytes.*[0] != PROTOCOL_VERSION) {
             std.debug.print("Invalid Version Number\n", .{});
             return null;
@@ -74,11 +91,6 @@ pub const saph_msg = struct {
         const srt = saph_request_type.itot(bytes.*[1]);
         msg.req_type = srt;
 
-        // msg.addy_len = bytesToU16be(bytes.*[2..3]);
-        // if (msg.addy_len > 0) {
-        //    msg.addy = bytes.*[5..(4 + msg.addy_len)];
-        //}
-
         msg.client_addy = bytesToU32be(bytes.*[2..6]);
 
         msg.incr = switch (bytes.*[6]) {
@@ -86,14 +98,32 @@ pub const saph_msg = struct {
             else => false,
         };
 
-        msg.content_len = bytesToU32be(bytes.*[7..11]);
-        msg.content_type = saph_content_type.itot(bytes.*[11]);
+        msg.path_len = bytesToU16be(bytes.*[7..9]);
+
+        const offset = msg.path_len;
+
+        if (msg.path_len > 0) {
+            msg.path = bytes.*[9..(9 + offset)];
+        }
+
+        const min = 9 + offset;
+        const max = 13 + offset;
+        msg.content_len = bytesToU32be(bytes.*[min..max][0..4]);
+        msg.content_type = saph_content_type.itot(bytes.*[13 + offset]);
 
         if (msg.content_len > 0) {
-            msg.content = bytes.*[12 .. 12 + msg.content_len];
+            msg.content = bytes.*[(14 + offset)..(14 + msg.content_len + offset)];
         }
 
         return msg;
+    }
+
+    pub fn report(self: *const saph_msg) void {
+        std.debug.print("{s} at {s} -- Content: {s}\n", .{
+            self.req_type.toa() orelse "None",
+            self.content_type.toa() orelse "None",
+            self.content,
+        });
     }
 };
 

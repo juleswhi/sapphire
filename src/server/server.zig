@@ -28,8 +28,6 @@ pub fn start() !void {
 
     while (true) {
         var client = try server.accept();
-        pr("Connection received from: {}: handling.\n", .{client.address});
-
         handle_conn(&client.stream, &allocator) catch {
             pr("Error occured", .{});
             continue;
@@ -46,8 +44,7 @@ fn handle_conn(stream: *std.net.Stream, alloc: *const std.mem.Allocator) !void {
 
     const sph = saph.saph_msg.from_bytes(&message);
     if (sph) |s| {
-        std.debug.print("Recevied packet: {}\n", .{s});
-        std.debug.print("Message Received: {s}", .{s.content});
+        s.report();
     } else {
         std.debug.print("Could not parse the packet\n", .{});
     }
