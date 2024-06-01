@@ -1,4 +1,5 @@
 const std = @import("std");
+const saph = @import("../protocol/saph.zig");
 
 const s_err = @import("server_error.zig").server_error;
 
@@ -39,8 +40,15 @@ pub fn start() !void {
 fn handle_conn(stream: *std.net.Stream, alloc: *const std.mem.Allocator) !void {
     defer stream.close();
 
+    // TODO: refactor to read lengths first
     const message = try stream.reader().readAllAlloc(alloc.*, 1024);
     defer alloc.*.free(message);
 
-    pr("Message received: {s}\n", .{message});
+    const sph = saph.saph_msg.from_bytes(&message);
+    if (sph) |s| {
+        std.debug.print("Recevied packet: {}\n", .{s});
+        std.debug.print("Message Received: {s}", .{s.content});
+    } else {
+        std.debug.print("Could not parse the packet\n", .{});
+    }
 }

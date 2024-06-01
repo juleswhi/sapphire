@@ -7,13 +7,18 @@
 </div>
 
 VERSION: 1 BYTE
-TYPE: 1 BYTE - GET / POST etc
+TYPE: 1 BYTE - GET / POST etc { GET = 0, POST = 1, NONE = 2 }
 
-ADDR LEN: 2 BYTE
-ADDR: {len} BYTE
+CLIENT ADDY: 4 BYTE
+INCREMENTAL: 1 BYTE
 
 CONTENT LEN: 4 BYTE
 CONTENT TYPE: 1 BYTE
+CONTENT: * BYTE
+
+
+ADDR LEN: 2 BYTE
+ADDR: * BYTE
 
 - [ ] Server
 - [ ] Custom url = saph://{url}
