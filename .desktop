@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=My Zig Server
+Exec=~/projects/sapphire/zig-out/bin/sapphire
+Type=Application
+Terminal=false
+Categories=Network;
+MimeType=x-scheme-handler/saph;
