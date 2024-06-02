@@ -1,5 +1,5 @@
 const std = @import("std");
-const saph = @import("../protocol/saph.zig");
+const saph = @import("../protocol/saph_request.zig");
 
 const s_err = @import("server_error.zig").server_error;
 
@@ -42,7 +42,7 @@ fn handle_conn(stream: *std.net.Stream, alloc: *const std.mem.Allocator) !void {
     const message = try stream.reader().readAllAlloc(alloc.*, 1024);
     defer alloc.*.free(message);
 
-    const sph = saph.saph_msg.from_bytes(&message);
+    const sph = saph.saph_request.from_bytes(&message);
     if (sph) |s| {
         s.report();
     } else {

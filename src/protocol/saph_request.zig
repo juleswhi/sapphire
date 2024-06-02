@@ -1,4 +1,6 @@
 const std = @import("std");
+const saph_request_type = @import("saph_types.zig").saph_request_type;
+const saph_content_type = @import("saph_types.zig").saph_content_type;
 const print = std.debug.print;
 
 // Build to send code over server?
@@ -6,64 +8,11 @@ const print = std.debug.print;
 
 const PROTOCOL_VERSION = 1;
 
-pub const saph_request_type = enum {
-    none,
-    get,
-    post,
-
-    pub fn itot(i: u8) saph_request_type {
-        return switch (i) {
-            1 => .get,
-            2 => .post,
-            else => .none,
-        };
-    }
-
-    fn toa(self: *const saph_request_type) ?[]const u8 {
-        return switch (self.*) {
-            .get => "GET",
-            .post => "POST",
-            .none => "NONE",
-        };
-    }
-};
-
-pub const saph_content_type = enum {
-    plaintext,
-    code_,
-    code_html,
-    code_css,
-    code_lua,
-    none,
-
-    pub fn itot(i: u8) saph_content_type {
-        return switch (i) {
-            0 => .plaintext,
-            1 => .code_,
-            2 => .code_html,
-            3 => .code_css,
-            4 => .code_lua,
-            else => .none,
-        };
-    }
-
-    fn toa(self: *const saph_content_type) ?[]const u8 {
-        return switch (self.*) {
-            .plaintext => "Plaintext",
-            .code_ => "Code/None",
-            .code_html => "Code/HTML",
-            .code_css => "Code/CSS",
-            .code_lua => "Code/Lua",
-            .none => "None",
-        };
-    }
-};
-
-pub const saph_msg = struct {
+pub const saph_request = struct {
     version: u8,
     req_type: saph_request_type,
 
-    client_addy: u32,
+    host: u32,
     incr: bool,
 
     path_len: u16,
@@ -73,9 +22,9 @@ pub const saph_msg = struct {
     content_type: saph_content_type,
     content: []const u8,
 
-    pub fn from_bytes(bytes: *const []const u8) ?saph_msg {
+    pub fn from_bytes(bytes: *const []const u8) ?saph_request {
         // Refactor to use some sort of idx var
-        var msg: saph_msg = undefined;
+        var msg: saph_request = undefined;
 
         if (bytes.*.len < 16) {
             return null;
@@ -88,10 +37,14 @@ pub const saph_msg = struct {
 
         msg.version = bytes.*[0];
 
-        const srt = saph_request_type.itot(bytes.*[1]);
-        msg.req_type = srt;
+        const request_type = saph_request_type.itot(bytes.*[1]);
+        if (request_type) |type_| {
+            msg.req_type = type_;
+        } else {
+            return null;
+        }
 
-        msg.client_addy = bytesToU32be(bytes.*[2..6]);
+        msg.host = bytesToU32be(bytes.*[2..6]);
 
         msg.incr = switch (bytes.*[6]) {
             1 => true,
@@ -109,7 +62,13 @@ pub const saph_msg = struct {
         const min = 9 + offset;
         const max = 13 + offset;
         msg.content_len = bytesToU32be(bytes.*[min..max][0..4]);
-        msg.content_type = saph_content_type.itot(bytes.*[13 + offset]);
+        const content_type = saph_content_type.itot(bytes.*[13 + offset]);
+
+        if (content_type) |type_| {
+            msg.content_type = type_;
+        } else {
+            return null;
+        }
 
         if (msg.content_len > 0) {
             msg.content = bytes.*[(14 + offset)..(14 + msg.content_len + offset)];
@@ -118,7 +77,7 @@ pub const saph_msg = struct {
         return msg;
     }
 
-    pub fn report(self: *const saph_msg) void {
+    pub fn report(self: *const saph_request) void {
         std.debug.print("{s} at {s} -- Content: {s}\n", .{
             self.req_type.toa() orelse "None",
             self.path,
