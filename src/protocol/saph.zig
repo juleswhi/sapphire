@@ -121,7 +121,7 @@ pub const saph_msg = struct {
     pub fn report(self: *const saph_msg) void {
         std.debug.print("{s} at {s} -- Content: {s}\n", .{
             self.req_type.toa() orelse "None",
-            self.content_type.toa() orelse "None",
+            self.path,
             self.content,
         });
     }
