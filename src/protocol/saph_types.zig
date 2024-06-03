@@ -24,6 +24,7 @@ pub const saph_content_type = enum {
     code_html,
     code_css,
     code_lua,
+    code_json,
 
     pub fn itot(i: u8) ?saph_content_type {
         return switch (i) {
@@ -32,6 +33,7 @@ pub const saph_content_type = enum {
             2 => .code_html,
             3 => .code_css,
             4 => .code_lua,
+            5 => .code_json,
             else => null,
         };
     }
