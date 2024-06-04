@@ -45,6 +45,7 @@ pub const saph_content_type = enum {
             .code_html => "Code/HTML",
             .code_css => "Code/CSS",
             .code_lua => "Code/Lua",
+            .code_json => "Code/Json",
             else => null,
         };
     }

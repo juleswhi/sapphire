@@ -47,6 +47,8 @@ CONTENT: * BYTE
 - [ ] GTK - prolly
 - [ ] Language ??? C / Rust / Golang?
 
+- [ ] Render markdown
+
 - [ ] WASM?
 
 

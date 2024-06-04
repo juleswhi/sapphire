@@ -1,6 +1,6 @@
 const std = @import("std");
-const saph_request_type = @import("saph_types.zig").saph_request_type;
 const saph_content_type = @import("saph_types.zig").saph_content_type;
+const saph_request_type = @import("saph_types.zig").saph_request_type;
 const print = std.debug.print;
 
 // Build to send code over server?
