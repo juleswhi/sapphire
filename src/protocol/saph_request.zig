@@ -20,13 +20,14 @@ pub const saph_request = struct {
 
     content_len: u32,
     content_type: saph_content_type,
-    content: []const u8,
+    content: ?[]const u8,
 
     pub fn from_bytes(bytes: *const []const u8) ?saph_request {
         // Refactor to use some sort of idx var
         var msg: saph_request = undefined;
 
-        if (bytes.*.len < 16) {
+        if (bytes.*.len < 15) {
+            std.debug.print("Less than 16 bytes, count: {}", .{bytes.len});
             return null;
         }
 
@@ -72,6 +73,8 @@ pub const saph_request = struct {
 
         if (msg.content_len > 0) {
             msg.content = bytes.*[(14 + offset)..(14 + msg.content_len + offset)];
+        } else {
+            msg.content = null;
         }
 
         return msg;
@@ -81,7 +84,7 @@ pub const saph_request = struct {
         std.debug.print("{s} at {s} -- Content: {s}\n", .{
             self.req_type.toa() orelse "None",
             self.path,
-            self.content,
+            self.content orelse "No Content",
         });
     }
 };

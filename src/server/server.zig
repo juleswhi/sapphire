@@ -4,10 +4,10 @@ const saph = @import("../protocol/saph_request.zig");
 const s_err = @import("server_error.zig").server_error;
 
 const net = std.net;
-const pr = std.debug.print;
+const print = std.debug.print;
 
 pub fn start() !void {
-    pr("INFO: Starting Server..\n", .{});
+    print("INFO: Starting Server..\n", .{});
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -24,12 +24,12 @@ pub fn start() !void {
 
     const addy = server.listen_address;
 
-    pr("Listening on: {}\n", .{addy.getPort()});
+    print("Listening on: {}\n", .{addy.getPort()});
 
     while (true) {
         var client = try server.accept();
         handle_conn(&client.stream, &allocator) catch {
-            pr("Error occured", .{});
+            print("Error occured", .{});
             continue;
         };
     }

@@ -9,7 +9,7 @@
 ## REQUEST
 
 VERSION: 1 BYTE
-TYPE: 1 BYTE - GET / POST etc { GET = 0, POST = 1 }
+TYPE: 1 BYTE - GET / POST etc { GET = 0, GIVE = 1, INCR = 2 }
 
 HOST: 4 BYTE
 INCREMENTAL: 1 BYTE
@@ -54,9 +54,17 @@ CONTENT: * BYTE
 
 ## Status Codes
 
-
 - 20 / OK
-
-
 - 30 / SERVER ERROR
 - 31 / RESOURCE NOT FOUND
+
+## Markdown Flavour
+
+Normal markdown BUT
+
+`::{ script.lua }`
+* To source a script
+
+`-> Name`
+*To name a component
+
