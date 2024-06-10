@@ -19,6 +19,14 @@ pub const saph_request_type = enum {
             .incr => "INCR",
         };
     }
+
+    pub fn toi(self: *const saph_request_type) u8 {
+        return switch (self.*) {
+            .get => 0,
+            .give => 1,
+            .incr => 2,
+        };
+    }
 };
 
 pub const saph_content_type = enum {
@@ -43,4 +51,20 @@ pub const saph_content_type = enum {
             else => null,
         };
     }
+
+    pub fn toi(self: *const saph_content_type) u8 {
+        return switch (self.*) {
+            .plaintext => 0,
+            .code_markdown => 1,
+            .code_lua => 2,
+        };
+    }
 };
+
+pub fn bytesToU16be(bytes: *const [2]u8) u16 {
+    return (@as(u16, bytes.*[0]) << 8) | bytes.*[1];
+}
+
+pub fn bytesToU32be(bytes: *const [4]u8) u32 {
+    return (@as(u32, bytes.*[0]) << 24) | (@as(u32, bytes.*[1]) << 16) | (@as(u32, bytes.*[2]) << 8) | bytes.*[3];
+}

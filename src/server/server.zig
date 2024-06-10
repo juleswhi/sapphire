@@ -1,5 +1,6 @@
 const std = @import("std");
-const saph = @import("../protocol/saph_request.zig");
+const saph_req = @import("../protocol/saph_request.zig").saph_request;
+const saph_res = @import("../protocol/saph_response.zig").saph_response;
 
 const s_err = @import("server_error.zig").server_error;
 
@@ -42,10 +43,15 @@ fn handle_conn(stream: *std.net.Stream, alloc: *const std.mem.Allocator) !void {
     const message = try stream.reader().readAllAlloc(alloc.*, 1024);
     defer alloc.*.free(message);
 
-    const sph = saph.saph_request.from_bytes(&message);
+    const sph = saph_req.from_bytes(&message);
     if (sph) |s| {
         s.report();
     } else {
         std.debug.print("Could not parse the packet\n", .{});
     }
+
+    const res = saph_res.from();
+    const bytes = try res.to_bytes(alloc.*);
+    try stream.writeAll(bytes);
+    std.debug.print("Wrote byutes", .{});
 }
